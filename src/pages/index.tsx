@@ -35,7 +35,7 @@ const PostView = (props: PostWithUser) => {
   return (
     <div className=" flex border-b border-slate-400 p-4" key={post.id}>
       <Image
-        src={author?.imageUrl!}
+        src={author?.imageUrl ?? "/image/default.jpg"}
         alt="author image"
         className="h-14 w-14 rounded-full"
         width={56}
