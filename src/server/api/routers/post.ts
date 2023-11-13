@@ -3,7 +3,11 @@ import { User } from "@clerk/nextjs/server";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import {
+  createTRPCRouter,
+  privateProcedure,
+  publicProcedure,
+} from "~/server/api/trpc";
 
 const filterUserForClient = (user: User) => {
   return {
@@ -17,6 +21,7 @@ export const postRouter = createTRPCRouter({
   getAll: publicProcedure.query(async ({ ctx }) => {
     const posts = await ctx.db.post.findMany({
       take: 100,
+      orderBy: [{ createdAt: "desc" }],
     });
     const users = (
       await clerkClient.users.getUserList({
@@ -28,9 +33,7 @@ export const postRouter = createTRPCRouter({
       console.log("user : ", user);
     });
     return posts.map((post) => {
-      console.log("post author id : ", post.authorId);
       const author = users.find((user) => user.id === post.authorId);
-      console.log("author : ", author);
       // commenting this due to error but it gives typs safety when uncommented now there is one undefined author i dont know how to delete that from prisma studio
       //  if (!author) {
       //   throw new TRPCError({
@@ -40,8 +43,30 @@ export const postRouter = createTRPCRouter({
       // }
       return {
         post,
-        author,
+        author: {
+          ...author,
+          username: author?.username,
+        },
       };
     });
   }),
+
+  create: privateProcedure
+    .input(
+      z.object({
+        content: z.string().emoji("Only emojis are allowed").min(1).max(280),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const authorId = ctx.userId;
+
+      const post = await ctx.db.post.create({
+        data: {
+          authorId,
+          content: input.content,
+        },
+      });
+
+      return post;
+    }),
 });
