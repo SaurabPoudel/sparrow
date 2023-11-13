@@ -34,7 +34,7 @@ type PostWithUser = RouterOutputs["post"]["getAll"][number];
 const PostView = (props: PostWithUser) => {
   const { post, author } = props;
   return (
-    <div className=" flex border-b border-slate-400 p-4" key={post.id}>
+    <div className=" flex gap-4 border-b border-slate-400 p-4" key={post.id}>
       <Image
         src={author?.imageUrl ?? "/image/default.jpg"}
         alt="author image"
@@ -49,7 +49,7 @@ const PostView = (props: PostWithUser) => {
             post.createdAt,
           ).fromNow()}`}</span>
         </div>
-        <span>{post.content}</span>
+        <span className="text-xl">{post.content}</span>
       </div>
     </div>
   );
@@ -68,7 +68,7 @@ const Feed = () => {
   if (!data) return <div>Something went wrong</div>;
 
   return (
-    <div className="flex grow flex-col overflow-y-scroll">
+    <div className="flex grow flex-col">
       {[...data, ...data, ...data, ...data].map((fullPost) => (
         <PostView {...fullPost} key={fullPost.post.id} />
       ))}
